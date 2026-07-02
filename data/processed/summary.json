@@ -1,0 +1,17 @@
+{
+  "total_routes": 534,
+  "total_operators": 8,
+  "total_stops": 8664,
+  "total_districts": 18,
+  "city_speed_median": 17.6,
+  "city_speed_mean": 18.9,
+  "city_speed_p25": 14.4,
+  "city_speed_p75": 22.2,
+  "transport_types": [
+    "bus_city",
+    "tram",
+    "trolleybus",
+    "bus"
+  ],
+  "total_km_analyzed": 1908696.0
+}

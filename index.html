@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPb Transit Analytics — Средняя скорость маршрутов</title>
+  <meta name="description" content="Аналитика скорости общественного транспорта Санкт-Петербурга: маршруты, перевозчики, типы транспорта и районы города." />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Загрузка данных…</div>
+  <div class="loading-sub">Это может занять несколько секунд</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 12h18M3 6h18M3 18h18"/>
+        <circle cx="8" cy="6" r="2" fill="currentColor" stroke="none"/>
+        <circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+        <circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+      </svg>
+      SPb Transit Analytics
+    </div>
+    <span class="header-badge">Расписание ГТФС</span>
+    <div class="header-spacer"></div>
+    <div class="header-meta" id="headerMeta">Загрузка…</div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="nav" role="tablist">
+    <button class="nav-btn active" data-tab="overview" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Обзор
+    </button>
+    <button class="nav-btn" data-tab="routes" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l3 6-3 6M21 6l-3 6 3 6"/></svg>
+      Маршруты
+    </button>
+    <button class="nav-btn" data-tab="compare" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Сравнение
+    </button>
+    <button class="nav-btn" data-tab="districts" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 12 2 21 11 21 22 3 22"/></svg>
+      Районы
+    </button>
+    <button class="nav-btn" data-tab="operators" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Перевозчики
+    </button>
+    <button class="nav-btn" data-tab="types" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Типы ТС
+    </button>
+    <button class="nav-btn" data-tab="map" role="tab">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+      Карта
+    </button>
+  </nav>
+
+  <!-- Main -->
+  <main class="main" role="main">
+
+    <!-- ═══════════════ OVERVIEW ═══════════════ -->
+    <section class="tab-panel active" id="panel-overview" role="tabpanel">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Распределение медианных скоростей маршрутов</div>
+          <canvas id="cityDistChart" height="70"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Скорость по типам транспорта</div>
+          <canvas id="typeOverviewChart" height="70"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Топ-10 быстрых и топ-10 медленных маршрутов</div>
+        <canvas id="topRoutesChart" height="70"></canvas>
+      </div>
+    </section>
+
+    <!-- ═══════════════ ROUTES ═══════════════ -->
+    <section class="tab-panel" id="panel-routes" role="tabpanel">
+      <div class="filters-bar">
+        <div class="filter-group">
+          <label class="filter-label" for="filterSearch">🔍</label>
+          <input class="filter-input" id="filterSearch" type="text" placeholder="Поиск по номеру или названию…" />
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterType">Тип</label>
+          <select class="filter-select" id="filterType">
+            <option value="">Все</option>
+            <option value="bus">Автобус</option>
+            <option value="tram">Трамвай</option>
+            <option value="trolleybus">Троллейбус</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterOperator">Перевозчик</label>
+          <select class="filter-select" id="filterOperator"><option value="">Все</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterDistrict">Район</label>
+          <select class="filter-select" id="filterDistrict"><option value="">Все</option></select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="filterUrban">Сеть</label>
+          <select class="filter-select" id="filterUrban">
+            <option value="">Все</option>
+            <option value="1">Городские</option>
+            <option value="0">Пригородные</option>
+          </select>
+        </div>
+        <button class="btn-reset" id="btnResetFilters">✕ Сбросить</button>
+        <div style="flex:1"></div>
+        <span class="header-meta" id="routeCount" style="white-space:nowrap"></span>
+      </div>
+
+      <div class="panel" style="padding:0; overflow:hidden; display:flex; flex-direction:column; height:calc(100vh - 58px - 48px - 72px - 52px - 30px);">
+        <div class="table-wrap" style="flex:1; overflow-y:auto;">
+          <table class="data-table" id="routesTable">
+            <thead>
+              <tr>
+                <th data-col="short_name" id="th-short_name">№ <span class="sort-icon">↕</span></th>
+                <th data-col="transport_type" id="th-transport_type">Тип <span class="sort-icon">↕</span></th>
+                <th data-col="speed_median" id="th-speed_median" class="sorted">Медиана <span class="sort-icon">↓</span></th>
+                <th data-col="speed_mean" id="th-speed_mean">Среднее <span class="sort-icon">↕</span></th>
+                <th data-col="speed_p25" id="th-speed_p25">Q25 <span class="sort-icon">↕</span></th>
+                <th data-col="speed_p75" id="th-speed_p75">Q75 <span class="sort-icon">↕</span></th>
+                <th data-col="total_km" id="th-total_km">Км <span class="sort-icon">↕</span></th>
+                <th data-col="operator_name" id="th-operator_name">Перевозчик <span class="sort-icon">↕</span></th>
+                <th>Районы</th>
+              </tr>
+            </thead>
+            <tbody id="routesBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="tableInfo"></span>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ COMPARE ═══════════════ -->
+    <section class="tab-panel" id="panel-compare" role="tabpanel">
+
+      <!-- Query builder -->
+      <div class="panel compare-controls">
+        <div class="compare-sentence">
+          <span>Сравнить</span>
+          <select class="cmp-select" id="cmpGroupBy">
+            <option value="operator_name">перевозчиков</option>
+            <option value="district">районы</option>
+            <option value="transport_type">типы транспорта</option>
+          </select>
+          <span>по средней скорости</span>
+        </div>
+        <div class="compare-divider"></div>
+        <div class="compare-filters-row">
+          <span class="cmp-filter-label">Фильтровать по:</span>
+          <div class="filter-group">
+            <label class="filter-label" for="cmpFilterType">Тип ТС</label>
+            <details class="multi-select filter-select" id="cmpFilterType">
+              <summary><span class="ms-label">Все типы</span></summary>
+              <div class="multi-select-options">
+                <label><input type="checkbox" value="bus" checked> Автобус</label>
+                <label><input type="checkbox" value="bus_city" checked> Автобус (город)</label>
+                <label><input type="checkbox" value="tram" checked> Трамвай</label>
+                <label><input type="checkbox" value="trolleybus" checked> Троллейбус</label>
+              </div>
+            </details>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="cmpFilterDist">Район</label>
+            <details class="multi-select filter-select" id="cmpFilterDist">
+              <summary><span class="ms-label">Все районы</span></summary>
+              <div class="multi-select-options" id="msOptionsDist"></div>
+            </details>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="cmpFilterOp">Перевозчик</label>
+            <details class="multi-select filter-select" id="cmpFilterOp">
+              <summary><span class="ms-label">Все перевозчики</span></summary>
+              <div class="multi-select-options" id="msOptionsOp"></div>
+            </details>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="cmpFilterUrban">Сеть</label>
+            <details class="multi-select filter-select" id="cmpFilterUrban">
+              <summary><span class="ms-label">Все</span></summary>
+              <div class="multi-select-options">
+                <label><input type="checkbox" value="1" checked> Городские</label>
+                <label><input type="checkbox" value="0" checked> Пригородные</label>
+              </div>
+            </details>
+          </div>
+          <button class="btn-reset" id="btnCmpReset">✕ Сбросить</button>
+        </div>
+      </div>
+
+      <!-- Result chart -->
+      <div class="panel" id="cmpChartPanel">
+        <div class="cmp-result-header">
+          <div class="cmp-result-title" id="cmpTitle">Выберите параметры выше</div>
+          <span class="cmp-chip" id="cmpRouteCount"></span>
+        </div>
+        <div id="cmpChartWrap" style="position:relative;">
+          <canvas id="cmpChart" height="80"></canvas>
+        </div>
+      </div>
+
+      <!-- Result table -->
+      <div class="panel" style="padding:0; overflow:hidden;">
+        <div class="table-wrap" style="max-height: 380px; overflow-y:auto;">
+          <table class="data-table" id="cmpTable">
+            <thead>
+              <tr>
+                <th style="width:36px">#</th>
+                <th id="cmpTh-name">Группа</th>
+                <th>Медиана</th>
+                <th>Среднее</th>
+                <th>Q25 / Q75</th>
+                <th>Маршрутов</th>
+                <th>Км</th>
+              </tr>
+            </thead>
+            <tbody id="cmpBody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="cmpTableInfo" style="font-size:.75rem;color:var(--text-dim)"></span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ═══════════════ DISTRICTS ═══════════════ -->
+    <section class="tab-panel" id="panel-districts" role="tabpanel">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Медиана скорости по районам, км/ч</div>
+          <canvas id="districtSpeedChart" height="130"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Разброс скоростей (Q25 / медиана / Q75)</div>
+          <canvas id="districtIqrChart" height="130"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Детальное сравнение районов</div>
+        <div id="districtComparison"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ OPERATORS ═══════════════ -->
+    <section class="tab-panel" id="panel-operators" role="tabpanel">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-title">Медиана скорости по перевозчикам</div>
+          <canvas id="opSpeedChart" height="110"></canvas>
+        </div>
+        <div class="panel">
+          <div class="panel-title">Маршруты и км по перевозчику</div>
+          <canvas id="opRoutesChart" height="110"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Детальное сравнение перевозчиков</div>
+        <div id="operatorComparison"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ TYPES ═══════════════ -->
+    <section class="tab-panel" id="panel-types" role="tabpanel">
+      <div class="panel">
+        <div class="panel-title">Скорость по типам транспорта (Q25 / Медиана / Q75)</div>
+        <canvas id="typeDetailChart" height="80"></canvas>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Детальное сравнение типов ТС</div>
+        <div id="typeComparison"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ MAP ═══════════════ -->
+    <section class="tab-panel" id="panel-map" role="tabpanel">
+      <div class="map-panel">
+        <div class="map-controls">
+          <div class="filter-group">
+            <label class="filter-label" for="mapFilterType">Тип ТС</label>
+            <select class="filter-select" id="mapFilterType">
+              <option value="">Все</option>
+              <option value="bus">Автобус</option>
+              <option value="tram">Трамвай</option>
+              <option value="trolleybus">Троллейбус</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label" for="mapFilterOp">Перевозчик</label>
+            <select class="filter-select" id="mapFilterOp"><option value="">Все</option></select>
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Скорость</label>
+            <input class="filter-select" id="mapSpeedMin" type="number" placeholder="от" style="width:60px;" min="0" max="120" />
+            <span style="color:var(--text-dim);font-size:.8rem">—</span>
+            <input class="filter-select" id="mapSpeedMax" type="number" placeholder="до" style="width:60px;" min="0" max="120" />
+          </div>
+          </div>
+        </div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><div class="legend-line" style="background:var(--bus-color)"></div> Автобус</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--tram-color)"></div> Трамвай</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--trolleybus-color)"></div> Троллейбус</div>
+          <div class="legend-item">
+            <span class="speed-legend-val map-speed-min" style="font-size:.7rem">—</span>
+            <div class="speed-grad" style="width:80px;height:8px;border-radius:4px"></div>
+            <span class="speed-legend-val map-speed-max" style="font-size:.7rem">—</span>
+            <span style="margin-left:2px;font-size:.7rem">км/ч</span>
+          </div>
+          <span style="margin-left:auto;font-size:.72rem;color:var(--text-muted)">© OpenStreetMap contributors</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
