@@ -25,13 +25,13 @@ const SUBURBAN_DISTRICTS = [
 
 // ── State ─────────────────────────────────────────────────
 const state = {
-  summary: null,
   summary: {}, routes: [], cube: [], mapShapes: null,
   filteredRoutes: [], page: 0, pageSize: 20, sortCol: 'speed_median', sortDir: -1,
   charts: {}, mapInstance: null, speedMin: 0, speedMax: 30,
   tabInitialized: new Set(['overview']),
   lang: localStorage.getItem('lang') || 'ru',
 };
+window.state = state;
 
 // ── Helpers ───────────────────────────────────────────────
 const fmt1   = v => v == null ? '—' : Number(v).toFixed(1);
@@ -949,15 +949,13 @@ async function boot() {
       
       // Re-render components safely
       updateSpeedLegend();
-      renderOverview();
+      if (state.tabInitialized.has('overview')) renderOverview();
+      if (state.tabInitialized.has('routes')) renderRoutesTable();
+      if (state.tabInitialized.has('compare')) renderCompare();
       if (state.tabInitialized.has('districts')) renderDistricts();
       if (state.tabInitialized.has('operators')) renderOperators();
       if (state.tabInitialized.has('types')) renderTypes();
       if (state.tabInitialized.has('map')) renderMapLayers();
-      if (state.tabInitialized.has('routes')) {
-        renderTable();
-        updateTableInfo();
-      }
     });
   }
   
