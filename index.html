@@ -5,14 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SPb Transit Analytics — Средняя скорость маршрутов</title>
   <meta name="description" content="Аналитика скорости общественного транспорта Санкт-Петербурга: маршруты, перевозчики, типы транспорта и районы города." />
+  <script src="locales.js"></script>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 <div class="loading-overlay" id="loadingOverlay">
   <div class="spinner"></div>
-  <div class="loading-text">Загрузка данных…</div>
-  <div class="loading-sub">Это может занять несколько секунд</div>
+  <div class="loading-text" data-i18n="loading_title">Загрузка данных…</div>
+  <div class="loading-sub" data-i18n="loading_sub">Это может занять несколько секунд</div>
 </div>
 
 <div class="tooltip" id="tooltip"></div>
@@ -29,40 +30,43 @@
       </svg>
       SPb Transit Analytics
     </div>
-    <span class="header-badge">Расписание ГТФС</span>
+    <span class="header-badge" data-i18n="badge_gtfs">Расписание ГТФС</span>
     <div class="header-spacer"></div>
-    <div class="header-meta" id="headerMeta">Загрузка…</div>
+    
+    <button class="lang-toggle" id="btnLangToggle">EN</button>
+    
+    <div class="header-meta" id="headerMeta" data-i18n="loading_meta">Загрузка…</div>
   </header>
 
   <!-- Nav -->
   <nav class="nav" role="tablist">
-    <button class="nav-btn active" data-tab="overview" role="tab">
+    <button class="nav-btn active" data-tab="overview" role="tab" data-i18n="tab_overview">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Обзор
+      <span class="i18n-text">Обзор</span>
     </button>
-    <button class="nav-btn" data-tab="routes" role="tab">
+    <button class="nav-btn" data-tab="routes" role="tab" data-i18n="tab_routes">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6l3 6-3 6M21 6l-3 6 3 6"/></svg>
-      Маршруты
+      <span class="i18n-text">Маршруты</span>
     </button>
-    <button class="nav-btn" data-tab="compare" role="tab">
+    <button class="nav-btn" data-tab="compare" role="tab" data-i18n="tab_compare">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-      Сравнение
+      <span class="i18n-text">Сравнение</span>
     </button>
-    <button class="nav-btn" data-tab="districts" role="tab">
+    <button class="nav-btn" data-tab="districts" role="tab" data-i18n="tab_districts">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 12 2 21 11 21 22 3 22"/></svg>
-      Районы
+      <span class="i18n-text">Районы</span>
     </button>
-    <button class="nav-btn" data-tab="operators" role="tab">
+    <button class="nav-btn" data-tab="operators" role="tab" data-i18n="tab_operators">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      Перевозчики
+      <span class="i18n-text">Перевозчики</span>
     </button>
-    <button class="nav-btn" data-tab="types" role="tab">
+    <button class="nav-btn" data-tab="types" role="tab" data-i18n="tab_types">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-      Типы ТС
+      <span class="i18n-text">Типы ТС</span>
     </button>
-    <button class="nav-btn" data-tab="map" role="tab">
+    <button class="nav-btn" data-tab="map" role="tab" data-i18n="tab_map">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-      Карта
+      <span class="i18n-text">Карта</span>
     </button>
   </nav>
 
@@ -74,16 +78,16 @@
       <div class="kpi-grid" id="kpiGrid"></div>
       <div class="grid-2">
         <div class="panel">
-          <div class="panel-title">Распределение медианных скоростей маршрутов</div>
+          <div class="panel-title" data-i18n="overview_dist">Распределение медианных скоростей маршрутов</div>
           <canvas id="cityDistChart" height="70"></canvas>
         </div>
         <div class="panel">
-          <div class="panel-title">Скорость по типам транспорта</div>
+          <div class="panel-title" data-i18n="overview_type">Скорость по типам транспорта</div>
           <canvas id="typeOverviewChart" height="70"></canvas>
         </div>
       </div>
       <div class="panel">
-        <div class="panel-title">Топ-10 быстрых и топ-10 медленных маршрутов</div>
+        <div class="panel-title" data-i18n="overview_top">Топ-10 быстрых и топ-10 медленных маршрутов</div>
         <canvas id="topRoutesChart" height="70"></canvas>
       </div>
     </section>
@@ -93,34 +97,34 @@
       <div class="filters-bar">
         <div class="filter-group">
           <label class="filter-label" for="filterSearch">🔍</label>
-          <input class="filter-input" id="filterSearch" type="text" placeholder="Поиск по номеру или названию…" />
+          <input class="filter-input" id="filterSearch" type="text" data-i18n="filter_search" placeholder="Поиск по номеру или названию…" />
         </div>
         <div class="filter-group">
-          <label class="filter-label" for="filterType">Тип</label>
+          <label class="filter-label" for="filterType" data-i18n="filter_type">Тип</label>
           <select class="filter-select" id="filterType">
-            <option value="">Все</option>
-            <option value="bus">Автобус</option>
-            <option value="tram">Трамвай</option>
-            <option value="trolleybus">Троллейбус</option>
+            <option value="" data-i18n="filter_all">Все</option>
+            <option value="bus" data-i18n="filter_bus">Автобус</option>
+            <option value="tram" data-i18n="filter_tram">Трамвай</option>
+            <option value="trolleybus" data-i18n="filter_trolleybus">Троллейбус</option>
           </select>
         </div>
         <div class="filter-group">
-          <label class="filter-label" for="filterOperator">Перевозчик</label>
-          <select class="filter-select" id="filterOperator"><option value="">Все</option></select>
+          <label class="filter-label" for="filterOperator" data-i18n="filter_operator">Перевозчик</label>
+          <select class="filter-select" id="filterOperator"><option value="" data-i18n="filter_all">Все</option></select>
         </div>
         <div class="filter-group">
-          <label class="filter-label" for="filterDistrict">Район</label>
-          <select class="filter-select" id="filterDistrict"><option value="">Все</option></select>
+          <label class="filter-label" for="filterDistrict" data-i18n="filter_district">Район</label>
+          <select class="filter-select" id="filterDistrict"><option value="" data-i18n="filter_all">Все</option></select>
         </div>
         <div class="filter-group">
-          <label class="filter-label" for="filterUrban">Сеть</label>
+          <label class="filter-label" for="filterUrban" data-i18n="filter_network">Сеть</label>
           <select class="filter-select" id="filterUrban">
-            <option value="">Все</option>
-            <option value="1">Городские</option>
-            <option value="0">Пригородные</option>
+            <option value="" data-i18n="filter_all">Все</option>
+            <option value="1" data-i18n="filter_urban">Городские</option>
+            <option value="0" data-i18n="filter_suburban">Пригородные</option>
           </select>
         </div>
-        <button class="btn-reset" id="btnResetFilters">✕ Сбросить</button>
+        <button class="btn-reset" id="btnResetFilters" data-i18n="filter_reset">✕ Сбросить</button>
         <div style="flex:1"></div>
         <span class="header-meta" id="routeCount" style="white-space:nowrap"></span>
       </div>
@@ -130,15 +134,15 @@
           <table class="data-table" id="routesTable">
             <thead>
               <tr>
-                <th data-col="short_name" id="th-short_name">№ <span class="sort-icon">↕</span></th>
-                <th data-col="transport_type" id="th-transport_type">Тип <span class="sort-icon">↕</span></th>
-                <th data-col="speed_median" id="th-speed_median" class="sorted">Медиана <span class="sort-icon">↓</span></th>
-                <th data-col="speed_mean" id="th-speed_mean">Среднее <span class="sort-icon">↕</span></th>
-                <th data-col="speed_p25" id="th-speed_p25">Q25 <span class="sort-icon">↕</span></th>
-                <th data-col="speed_p75" id="th-speed_p75">Q75 <span class="sort-icon">↕</span></th>
-                <th data-col="total_km" id="th-total_km">Км <span class="sort-icon">↕</span></th>
-                <th data-col="operator_name" id="th-operator_name">Перевозчик <span class="sort-icon">↕</span></th>
-                <th>Районы</th>
+                <th data-col="short_name" id="th-short_name"><span class="i18n-text" data-i18n="th_no">№</span> <span class="sort-icon">↕</span></th>
+                <th data-col="transport_type" id="th-transport_type"><span class="i18n-text" data-i18n="filter_type">Тип</span> <span class="sort-icon">↕</span></th>
+                <th data-col="speed_median" id="th-speed_median" class="sorted"><span class="i18n-text" data-i18n="th_median">Медиана</span> <span class="sort-icon">↓</span></th>
+                <th data-col="speed_mean" id="th-speed_mean"><span class="i18n-text" data-i18n="th_mean">Среднее</span> <span class="sort-icon">↕</span></th>
+                <th data-col="speed_p25" id="th-speed_p25"><span class="i18n-text">Q25</span> <span class="sort-icon">↕</span></th>
+                <th data-col="speed_p75" id="th-speed_p75"><span class="i18n-text">Q75</span> <span class="sort-icon">↕</span></th>
+                <th data-col="total_km" id="th-total_km"><span class="i18n-text" data-i18n="th_km">Км</span> <span class="sort-icon">↕</span></th>
+                <th data-col="operator_name" id="th-operator_name"><span class="i18n-text" data-i18n="filter_operator">Перевозчик</span> <span class="sort-icon">↕</span></th>
+                <th data-i18n="th_districts">Районы</th>
               </tr>
             </thead>
             <tbody id="routesBody"></tbody>
@@ -157,54 +161,54 @@
       <!-- Query builder -->
       <div class="panel compare-controls">
         <div class="compare-sentence">
-          <span>Сравнить</span>
+          <span data-i18n="cmp_sentence_1">Сравнить</span>
           <select class="cmp-select" id="cmpGroupBy">
-            <option value="operator_name">перевозчиков</option>
-            <option value="district">районы</option>
-            <option value="transport_type">типы транспорта</option>
+            <option value="operator_name" data-i18n="cmp_opt_ops">перевозчиков</option>
+            <option value="district" data-i18n="cmp_opt_districts">районы</option>
+            <option value="transport_type" data-i18n="cmp_opt_types">типы транспорта</option>
           </select>
-          <span>по средней скорости</span>
+          <span data-i18n="cmp_sentence_2">по средней скорости</span>
         </div>
         <div class="compare-divider"></div>
         <div class="compare-filters-row">
-          <span class="cmp-filter-label">Фильтровать по:</span>
+          <span class="cmp-filter-label" data-i18n="cmp_filter_by">Фильтровать по:</span>
           <div class="filter-group">
-            <label class="filter-label" for="cmpFilterType">Тип ТС</label>
+            <label class="filter-label" for="cmpFilterType" data-i18n="filter_type_full">Тип ТС</label>
             <details class="multi-select filter-select" id="cmpFilterType">
-              <summary><span class="ms-label">Все типы</span></summary>
+              <summary><span class="ms-label i18n-text" data-i18n="cmp_all_types">Все типы</span></summary>
               <div class="multi-select-options">
-                <label><input type="checkbox" value="bus" checked> Автобус</label>
-                <label><input type="checkbox" value="bus_city" checked> Автобус (город)</label>
-                <label><input type="checkbox" value="tram" checked> Трамвай</label>
-                <label><input type="checkbox" value="trolleybus" checked> Троллейбус</label>
+                <label><input type="checkbox" value="bus" checked> <span class="i18n-text" data-i18n="filter_bus">Автобус</span></label>
+                <label><input type="checkbox" value="bus_city" checked> <span class="i18n-text" data-i18n="filter_bus_city">Автобус (город)</span></label>
+                <label><input type="checkbox" value="tram" checked> <span class="i18n-text" data-i18n="filter_tram">Трамвай</span></label>
+                <label><input type="checkbox" value="trolleybus" checked> <span class="i18n-text" data-i18n="filter_trolleybus">Троллейбус</span></label>
               </div>
             </details>
           </div>
           <div class="filter-group">
-            <label class="filter-label" for="cmpFilterDist">Район</label>
+            <label class="filter-label" for="cmpFilterDist" data-i18n="filter_district">Район</label>
             <details class="multi-select filter-select" id="cmpFilterDist">
-              <summary><span class="ms-label">Все районы</span></summary>
+              <summary><span class="ms-label i18n-text" data-i18n="cmp_all_districts">Все районы</span></summary>
               <div class="multi-select-options" id="msOptionsDist"></div>
             </details>
           </div>
           <div class="filter-group">
-            <label class="filter-label" for="cmpFilterOp">Перевозчик</label>
+            <label class="filter-label" for="cmpFilterOp" data-i18n="filter_operator">Перевозчик</label>
             <details class="multi-select filter-select" id="cmpFilterOp">
-              <summary><span class="ms-label">Все перевозчики</span></summary>
+              <summary><span class="ms-label i18n-text" data-i18n="cmp_all_ops">Все перевозчики</span></summary>
               <div class="multi-select-options" id="msOptionsOp"></div>
             </details>
           </div>
           <div class="filter-group">
-            <label class="filter-label" for="cmpFilterUrban">Сеть</label>
+            <label class="filter-label" for="cmpFilterUrban" data-i18n="filter_network">Сеть</label>
             <details class="multi-select filter-select" id="cmpFilterUrban">
-              <summary><span class="ms-label">Все</span></summary>
+              <summary><span class="ms-label i18n-text" data-i18n="filter_all">Все</span></summary>
               <div class="multi-select-options">
-                <label><input type="checkbox" value="1" checked> Городские</label>
-                <label><input type="checkbox" value="0" checked> Пригородные</label>
+                <label><input type="checkbox" value="1" checked> <span class="i18n-text" data-i18n="filter_urban">Городские</span></label>
+                <label><input type="checkbox" value="0" checked> <span class="i18n-text" data-i18n="filter_suburban">Пригородные</span></label>
               </div>
             </details>
           </div>
-          <button class="btn-reset" id="btnCmpReset">✕ Сбросить</button>
+          <button class="btn-reset" id="btnCmpReset" data-i18n="filter_reset">✕ Сбросить</button>
         </div>
       </div>
 
@@ -248,16 +252,16 @@
     <section class="tab-panel" id="panel-districts" role="tabpanel">
       <div class="grid-2">
         <div class="panel">
-          <div class="panel-title">Медиана скорости по районам, км/ч</div>
+          <div class="panel-title" data-i18n="dist_speed">Медиана скорости по районам, км/ч</div>
           <canvas id="districtSpeedChart" height="130"></canvas>
         </div>
         <div class="panel">
-          <div class="panel-title">Разброс скоростей (Q25 / медиана / Q75)</div>
+          <div class="panel-title" data-i18n="dist_iqr">Разброс скоростей (Q25 / медиана / Q75)</div>
           <canvas id="districtIqrChart" height="130"></canvas>
         </div>
       </div>
       <div class="panel">
-        <div class="panel-title">Детальное сравнение районов</div>
+        <div class="panel-title" data-i18n="dist_comp">Детальное сравнение районов</div>
         <div id="districtComparison"></div>
       </div>
     </section>
@@ -266,16 +270,16 @@
     <section class="tab-panel" id="panel-operators" role="tabpanel">
       <div class="grid-2">
         <div class="panel">
-          <div class="panel-title">Медиана скорости по перевозчикам</div>
+          <div class="panel-title" data-i18n="op_speed">Медиана скорости по перевозчикам</div>
           <canvas id="opSpeedChart" height="110"></canvas>
         </div>
         <div class="panel">
-          <div class="panel-title">Маршруты и км по перевозчику</div>
+          <div class="panel-title" data-i18n="op_routes">Маршруты и км по перевозчику</div>
           <canvas id="opRoutesChart" height="110"></canvas>
         </div>
       </div>
       <div class="panel">
-        <div class="panel-title">Детальное сравнение перевозчиков</div>
+        <div class="panel-title" data-i18n="op_comp">Детальное сравнение перевозчиков</div>
         <div id="operatorComparison"></div>
       </div>
     </section>
@@ -283,11 +287,11 @@
     <!-- ═══════════════ TYPES ═══════════════ -->
     <section class="tab-panel" id="panel-types" role="tabpanel">
       <div class="panel">
-        <div class="panel-title">Скорость по типам транспорта (Q25 / Медиана / Q75)</div>
+        <div class="panel-title" data-i18n="type_speed">Скорость по типам транспорта (Q25 / Медиана / Q75)</div>
         <canvas id="typeDetailChart" height="80"></canvas>
       </div>
       <div class="panel">
-        <div class="panel-title">Детальное сравнение типов ТС</div>
+        <div class="panel-title" data-i18n="type_detail">Детальное сравнение типов ТС</div>
         <div id="typeComparison"></div>
       </div>
     </section>
@@ -319,14 +323,14 @@
         </div>
         <div id="map"></div>
         <div class="map-legend">
-          <div class="legend-item"><div class="legend-line" style="background:var(--bus-color)"></div> Автобус</div>
-          <div class="legend-item"><div class="legend-line" style="background:var(--tram-color)"></div> Трамвай</div>
-          <div class="legend-item"><div class="legend-line" style="background:var(--trolleybus-color)"></div> Троллейбус</div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--bus-color)"></div> <span data-i18n="filter_bus">Автобус</span></div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--tram-color)"></div> <span data-i18n="filter_tram">Трамвай</span></div>
+          <div class="legend-item"><div class="legend-line" style="background:var(--trolleybus-color)"></div> <span data-i18n="filter_trolleybus">Троллейбус</span></div>
           <div class="legend-item">
             <span class="speed-legend-val map-speed-min" style="font-size:.7rem">—</span>
             <div class="speed-grad" style="width:80px;height:8px;border-radius:4px"></div>
             <span class="speed-legend-val map-speed-max" style="font-size:.7rem">—</span>
-            <span style="margin-left:2px;font-size:.7rem">км/ч</span>
+            <span style="margin-left:2px;font-size:.7rem" data-i18n="map_kmh">км/ч</span>
           </div>
           <span style="margin-left:auto;font-size:.72rem;color:var(--text-muted)">© OpenStreetMap contributors</span>
         </div>
