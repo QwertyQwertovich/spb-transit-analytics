@@ -32,6 +32,28 @@ This project was developed as a technical showcase for data engineering, spatial
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/map.png" alt="Map View" width="800">
+  <br>
+  <em>Interactive spatial mapping of public transit speeds across Saint Petersburg</em>
+</p>
+
+<p align="center">
+  <img src="assets/districts.png" alt="Districts Analytics" width="800">
+  <br>
+  <em>Performance analytics and comparisons across various city districts</em>
+</p>
+
+<p align="center">
+  <img src="assets/routes_table.png" alt="Routes Table" width="800">
+  <br>
+  <em>Detailed routes table with advanced filtering and pagination</em>
+</p>
+
+---
+
 ## 🛠️ Technology Stack
 
 ### Data Engineering Pipeline
@@ -45,11 +67,6 @@ This project was developed as a technical showcase for data engineering, spatial
 * **HTML5 / CSS3**: Custom design system featuring CSS variables, responsive grids, and modern UI/UX principles.
 * **Chart.js**: For rendering bar charts and box-plot alternatives.
 * **Leaflet.js**: For interactive map rendering.
-
-### DevOps & Deployment
-* **Nginx**: High-performance static file serving.
-* **Let's Encrypt (Certbot)**: Automated SSL certificate provisioning.
-* **Ubuntu Linux**: Deployment environment.
 
 ---
 
@@ -96,10 +113,3 @@ To run the project locally and rebuild the dataset:
    python -m http.server 8080
    ```
    Navigate to `http://localhost:8080` in your browser.
-
----
-
-<div align="center">
-  <i>Developed by Aleksandr Kharitonov.</i><br>
-  For academic and portfolio purposes.
-</div>
