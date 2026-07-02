@@ -230,11 +230,11 @@
             <thead>
               <tr>
                 <th style="width:36px">#</th>
-                <th id="cmpTh-name">Группа</th>
+                <th id="cmpTh-name" data-i18n="tab_groups">Группа</th>
                 <th>Медиана</th>
                 <th>Среднее</th>
                 <th>Q25 / Q75</th>
-                <th>Маршрутов</th>
+                <th data-i18n="kpi_routes">Маршрутов</th>
                 <th>Км</th>
               </tr>
             </thead>
@@ -301,20 +301,20 @@
       <div class="map-panel">
         <div class="map-controls">
           <div class="filter-group">
-            <label class="filter-label" for="mapFilterType">Тип ТС</label>
+            <label class="filter-label" for="mapFilterType" data-i18n="tab_types">Тип ТС</label>
             <select class="filter-select" id="mapFilterType">
-              <option value="">Все</option>
-              <option value="bus">Автобус</option>
-              <option value="tram">Трамвай</option>
-              <option value="trolleybus">Троллейбус</option>
+              <option value="" data-i18n="js_all_ops">Все</option>
+              <option value="bus" data-i18n="type_bus">Автобус</option>
+              <option value="tram" data-i18n="type_tram">Трамвай</option>
+              <option value="trolleybus" data-i18n="type_trolleybus">Троллейбус</option>
             </select>
           </div>
           <div class="filter-group">
-            <label class="filter-label" for="mapFilterOp">Перевозчик</label>
-            <select class="filter-select" id="mapFilterOp"><option value="">Все</option></select>
+            <label class="filter-label" for="mapFilterOp" data-i18n="js_map_op">Перевозчик</label>
+            <select class="filter-select" id="mapFilterOp"><option value="" data-i18n="js_all_ops">Все</option></select>
           </div>
           <div class="filter-group">
-            <label class="filter-label">Скорость</label>
+            <label class="filter-label" data-i18n="kpi_speed">Скорость</label>
             <input class="filter-select" id="mapSpeedMin" type="number" placeholder="от" style="width:60px;" min="0" max="120" />
             <span style="color:var(--text-dim);font-size:.8rem">—</span>
             <input class="filter-select" id="mapSpeedMax" type="number" placeholder="до" style="width:60px;" min="0" max="120" />

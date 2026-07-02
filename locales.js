@@ -1,4 +1,12 @@
 const LOCALES = {
+  "tab_groups": { ru: "Группа", en: "Group" },
+  "js_min": { ru: "Мин", en: "Min" },
+  "js_max": { ru: "Макс", en: "Max" },
+  "js_all_ops": { ru: "Все", en: "All" },
+  "type_bus": { ru: "Автобус", en: "Bus" },
+  "type_tram": { ru: "Трамвай", en: "Tram" },
+  "type_trolleybus": { ru: "Троллейбус", en: "Trolleybus" },
+
   "title": { ru: "SPb Transit Analytics — Средняя скорость маршрутов", en: "SPb Transit Analytics — Average Route Speeds" },
   "loading_title": { ru: "Загрузка данных…", en: "Loading data..." },
   "loading_sub": { ru: "Это может занять несколько секунд", en: "This may take a few seconds" },

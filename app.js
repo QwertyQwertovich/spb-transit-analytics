@@ -266,14 +266,14 @@ function renderOverview() {
   const totalOps    = new Set(routes.map(r => r.operator_name).filter(Boolean)).size;
 
   const kpis = [
-    { label: 'Маршрутов',       value: totalRoutes,                          unit: 'в расписании' },
-    { label: 'Перевозчиков',    value: totalOps,                             unit: '', cls: 'accent2' },
-    { label: 'Остановок',       value: s.total_stops.toLocaleString('ru'),   unit: '' },
-    { label: 'Районов',         value: s.total_districts,                    unit: 'охвачено' },
-    { label: 'Медиана скорости',value: fmt1(s.city_speed_median),            unit: 'км/ч по городу', cls: 'accent' },
-    { label: 'Средняя скорость',value: fmt1(s.city_speed_mean),              unit: 'км/ч' },
-    { label: 'Q25 / Q75',       value: `${fmt1(s.city_speed_p25)} / ${fmt1(s.city_speed_p75)}`, unit: 'км/ч' },
-    { label: 'Км проанализировано', value: fmtKm(s.total_km_analyzed / 1e6) + ' млн', unit: 'пасс-км' },
+    { label: window.t('kpi_routes'),       value: totalRoutes,                          unit: window.t('unit_routes') },
+    { label: window.t('kpi_ops'),    value: totalOps,                             unit: '', cls: 'accent2' },
+    { label: window.t('kpi_stops'),       value: s.total_stops.toLocaleString('ru'),   unit: '' },
+    { label: window.t('kpi_districts'),         value: s.total_districts,                    unit: window.t('unit_districts') },
+    { label: window.t('js_speed_median'),value: fmt1(s.city_speed_median),            unit: window.t('unit_kmh_median'), cls: 'accent' },
+    { label: window.t('kpi_speed_mean'),value: fmt1(s.city_speed_mean),              unit: window.t('unit_kmh') },
+    { label: 'Q25 / Q75',       value: `${fmt1(s.city_speed_p25)} / ${fmt1(s.city_speed_p75)}`, unit: window.t('unit_kmh') },
+    { label: window.t('kpi_km'), value: `${fmtKm(s.total_km_analyzed / 1e6)} ${window.t('unit_mln_km')}`, unit: '' },
   ];
 
   document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
@@ -300,11 +300,11 @@ function renderOverview() {
     options: chartDefaults({
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { title: c => `~${c[0].label} км/ч`, label: c => `${c.raw} маршрутов` } }
+        tooltip: { callbacks: { title: c => `~${c[0].label} ${window.t('unit_kmh')}`, label: c => `${c.raw} маршрутов` } }
       },
       scales: {
-        x: { title: { display: true, text: 'Медиана скорости, км/ч', color: '#7a8aaa' } },
-        y: { title: { display: true, text: 'Маршрутов', color: '#7a8aaa' } },
+        x: { title: { display: true, text: window.t('js_speed_median') + ', ' + window.t('unit_kmh'), color: '#7a8aaa' } },
+        y: { title: { display: true, text: window.t('kpi_routes'), color: '#7a8aaa' } },
       }
     })
   });
@@ -319,7 +319,7 @@ function renderOverview() {
       labels: types.map(t => typeName(t.transport_type)),
       datasets: [
         { label: 'Q25',     data: types.map(t => t.speed_p25), backgroundColor: types.map(t => typeColor(t.transport_type, 0.2)), borderRadius: 4, borderWidth: 0, stack: 's' },
-        { label: 'Медиана', data: types.map(t => t.speed_median - t.speed_p25), backgroundColor: types.map(t => typeColor(t.transport_type, 0.85)), borderRadius: 4, borderWidth: 0, stack: 's' },
+        { label: window.t('js_speed_median'), data: types.map(t => t.speed_median - t.speed_p25), backgroundColor: types.map(t => typeColor(t.transport_type, 0.85)), borderRadius: 4, borderWidth: 0, stack: 's' },
         { label: 'Q75',     data: types.map(t => t.speed_p75 - t.speed_median), backgroundColor: types.map(t => typeColor(t.transport_type, 0.3)), borderRadius: 4, borderWidth: 0, stack: 's' },
       ]
     },
@@ -328,12 +328,12 @@ function renderOverview() {
         legend: { labels: { color: '#7a8aaa', font: { size: 11 } } },
         tooltip: { callbacks: { label: (c) => {
           const d = types[c.dataIndex];
-          return [`Q25: ${fmt1(d.speed_p25)}`, `Медиана: ${fmt1(d.speed_median)}`, `Q75: ${fmt1(d.speed_p75)}`];
+          return [`Q25: ${fmt1(d.speed_p25)}`, `${window.t('js_speed_median')}: ${fmt1(d.speed_median)}`, `Q75: ${fmt1(d.speed_p75)}`];
         }}}
       },
       scales: {
         x: { stacked: true },
-        y: { stacked: true, title: { display: true, text: 'км/ч', color: '#7a8aaa' } }
+        y: { stacked: true, title: { display: true, text: window.t('unit_kmh'), color: '#7a8aaa' } }
       }
     })
   });
@@ -356,11 +356,11 @@ function renderOverview() {
       plugins: {
         legend: { display: false },
         tooltip: { callbacks: {
-          title: c => `Маршрут ${combined[c[0].dataIndex].short_name}`,
-          label: c => [`Медиана: ${fmt1(c.raw)} км/ч`, `Перевозчик: ${combined[c[0].dataIndex].operator_name || '—'}`, `Тип: ${typeName(combined[c[0].dataIndex].transport_type)}`]
+          title: c => `${window.t('js_map_route')} ${combined[c[0].dataIndex].short_name}`,
+          label: c => [`${window.t('js_speed_median')}: ${fmt1(c.raw)} ${window.t('unit_kmh')}`, `${window.t('js_map_op')}: ${combined[c[0].dataIndex].operator_name || window.t('unknown_operator')}`, `${window.t('js_map_type')}: ${typeName(combined[c[0].dataIndex].transport_type)}`]
         }}
       },
-      scales: { x: { title: { display: true, text: 'Медиана скорости, км/ч', color: '#7a8aaa' } } }
+      scales: { x: { title: { display: true, text: window.t('js_speed_median') + ', ' + window.t('unit_kmh'), color: '#7a8aaa' } } }
     })
   });
 }
@@ -448,8 +448,8 @@ function renderRoutesTable() {
   const cur   = Math.min(page, pages - 1);
   const slice = sorted.slice(cur * pageSize, (cur + 1) * pageSize);
 
-  document.getElementById('routeCount').textContent = `${total} маршрутов`;
-  document.getElementById('tableInfo').textContent  = `Показано ${slice.length} из ${total}`;
+  document.getElementById('routeCount').textContent = `${total} ${window.t('unit_routes')}`;
+  document.getElementById('tableInfo').textContent  = `${window.t('js_showing')} ${slice.length} ${window.t('js_out_of')} ${total}`;
 
   const tbody = document.getElementById('routesBody');
   tbody.innerHTML = slice.map(r => {
@@ -463,8 +463,8 @@ function renderRoutesTable() {
       <td style="font-family:var(--mono);font-size:.8rem">${fmt1(r.speed_mean)}</td>
       <td style="font-family:var(--mono);font-size:.8rem;color:var(--text-dim)">${fmt1(r.speed_p25)}</td>
       <td style="font-family:var(--mono);font-size:.8rem;color:var(--text-dim)">${fmt1(r.speed_p75)}</td>
-      <td style="font-family:var(--mono);font-size:.8rem;color:var(--text-dim)">${fmtKm(r.total_km)} км</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:.78rem">${r.operator_name || '—'}</td>
+      <td style="font-family:var(--mono);font-size:.8rem;color:var(--text-dim)">${fmtKm(r.total_km)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:.78rem">${r.operator_name || window.t('unknown_operator')}</td>
       <td><div class="district-tags">${dists}${more}</div></td>
     </tr>`;
   }).join('');
@@ -508,10 +508,10 @@ function updateMsLabel(id) {
   const checked = Array.from(cbs).filter(cb => cb.checked);
   const label = details.querySelector('.ms-label');
   
-  if (checked.length === cbs.length) label.textContent = 'Все';
-  else if (checked.length === 0) label.textContent = 'Ничего';
+  if (checked.length === cbs.length) label.textContent = window.t('js_all_ops');
+  else if (checked.length === 0) label.textContent = '0';
   else if (checked.length === 1) label.textContent = checked[0].parentNode.textContent.trim();
-  else label.textContent = `Выбрано: ${checked.length}`;
+  else label.textContent = `${window.t('js_selected')}: ${checked.length}`;
 }
 
 function initCompareFilters() {
@@ -589,10 +589,10 @@ function renderCompare() {
   const urbLabel  = fUrban[0] !== 'All' ? document.getElementById('cmpFilterUrban').querySelector('.ms-label').textContent : '';
 
   const activeFilters = [typeLabel, opLabel, distLabel, urbLabel].filter(Boolean);
-  let title = 'Сравнение ';
-  if (groupBy === 'operator_name') title += 'перевозчиков';
-  else if (groupBy === 'district') title += 'районов';
-  else title += 'типов транспорта';
+  let title = window.t('js_cmp_title_prefix') + ' ';
+  if (groupBy === 'operator_name') title += window.t('js_compare_ops');
+  else if (groupBy === 'district') title += window.t('js_compare_dist');
+  else title += window.t('js_compare_types');
   
   if (activeFilters.length) title += ' (' + activeFilters.join(', ') + ')';
 
@@ -601,15 +601,15 @@ function renderCompare() {
   // Total routes for this filter combination
   const totalRes = queryCube({ transport_type: fType, district: fDist, operator_name: fOp, urban: fUrban }, null);
   const totalRoutes = totalRes.length ? totalRes[0].routes : 0;
-  document.getElementById('cmpRouteCount').textContent = `${totalRoutes} маршрутов`;
+  document.getElementById('cmpRouteCount').textContent = `${totalRoutes} ${window.t('unit_routes')}`;
   
-  document.getElementById('cmpTableInfo').textContent  = `Найдено ${data.length} групп`;
+  document.getElementById('cmpTableInfo').textContent  = `${window.t('js_found')} ${data.length}`;
 
-  const groupLabelMap = { operator_name: 'Перевозчик', district: 'Район', transport_type: 'Тип ТС' };
-  document.getElementById('cmpTh-name').textContent = groupLabelMap[groupBy] || 'Группа';
+  const groupLabelMap = { operator_name: window.t('js_map_op'), district: window.t('tab_districts'), transport_type: window.t('tab_types') };
+  document.getElementById('cmpTh-name').textContent = groupLabelMap[groupBy] || 'Group';
 
   if (data.length === 0) {
-    document.getElementById('cmpChartWrap').innerHTML = `<div class="cmp-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Нет данных для заданных фильтров</div>`;
+    document.getElementById('cmpChartWrap').innerHTML = `<div class="cmp-empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>${window.t('js_no_data')}</div>`;
     document.getElementById('cmpBody').innerHTML = '';
     return;
   }
@@ -624,7 +624,7 @@ function renderCompare() {
     data: {
       labels: data.map(d => groupBy === 'transport_type' ? typeName(d[groupBy]) : shortName(d[groupBy], 25)),
       datasets: [{
-        label: 'Медиана',
+        label: window.t('js_speed_median'),
         data: data.map(d => d.speed_median),
         backgroundColor: data.map(d => speedColor(d.speed_median, minSpd - 2, maxSpd + 2)),
         borderRadius: 4, borderWidth: 0
@@ -633,9 +633,9 @@ function renderCompare() {
     options: chartDefaults({
       plugins: {
         legend: { display: false },
-        tooltip: { callbacks: { label: c => `${fmt1(c.raw)} км/ч (${data[c.dataIndex].routes} марш.)` } }
+        tooltip: { callbacks: { label: c => `${fmt1(c.raw)} ${window.t('unit_kmh')} (${data[c.dataIndex].routes})` } }
       },
-      scales: { y: { title: { display: true, text: 'Медиана км/ч', color: '#7a8aaa' } } }
+      scales: { y: { title: { display: true, text: window.t('js_speed_median') + ' ' + window.t('unit_kmh'), color: '#7a8aaa' } } }
     })
   });
 
@@ -674,12 +674,12 @@ function renderDistricts() {
     type: 'bar',
     data: {
       labels: data.map(d => d.district),
-      datasets: [{ label: 'Медиана км/ч', data: data.map(d => d.speed_median), backgroundColor: data.map(d => speedColor(d.speed_median, minD, maxD)), borderRadius: 5, borderWidth: 0 }]
+      datasets: [{ label: window.t('js_speed_median') + ' ' + window.t('unit_kmh'), data: data.map(d => d.speed_median), backgroundColor: data.map(d => speedColor(d.speed_median, minD, maxD)), borderRadius: 5, borderWidth: 0 }]
     },
     options: chartDefaults({
       indexAxis: 'y',
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fmt1(c.raw)} км/ч` } } },
-      scales: { x: { title: { display: true, text: 'Медиана скорости, км/ч', color: '#7a8aaa' } } }
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => `${fmt1(c.raw)} ${window.t('unit_kmh')}` } } },
+      scales: { x: { title: { display: true, text: window.t('js_speed_median') + ', ' + window.t('unit_kmh'), color: '#7a8aaa' } } }
     })
   });
 
@@ -690,7 +690,7 @@ function renderDistricts() {
       labels: data.map(d => d.district),
       datasets: [
         { label: 'Q25',     data: data.map(d => d.speed_p25),                    backgroundColor: 'rgba(91,138,240,.25)', borderRadius: 4, borderWidth: 0, stack: 's' },
-        { label: 'Медиана', data: data.map(d => d.speed_median - d.speed_p25),   backgroundColor: 'rgba(91,138,240,.65)', borderRadius: 4, borderWidth: 0, stack: 's' },
+        { label: window.t('js_speed_median'), data: data.map(d => d.speed_median - d.speed_p25),   backgroundColor: 'rgba(91,138,240,.65)', borderRadius: 4, borderWidth: 0, stack: 's' },
         { label: 'Q75',     data: data.map(d => d.speed_p75 - d.speed_median),   backgroundColor: 'rgba(91,138,240,.2)',  borderRadius: 4, borderWidth: 0, stack: 's' },
       ]
     },
@@ -700,11 +700,11 @@ function renderDistricts() {
         legend: { labels: { color: '#7a8aaa' } },
         tooltip: { callbacks: { label: (c) => {
           const d = data[c.dataIndex];
-          return [`Q25: ${fmt1(d.speed_p25)} км/ч`, `Медиана: ${fmt1(d.speed_median)} км/ч`, `Q75: ${fmt1(d.speed_p75)} км/ч`];
+          return [`Q25: ${fmt1(d.speed_p25)} ${window.t('unit_kmh')}`, `${window.t('js_speed_median')}: ${fmt1(d.speed_median)} ${window.t('unit_kmh')}`, `Q75: ${fmt1(d.speed_p75)} ${window.t('unit_kmh')}`];
         }}}
       },
       scales: {
-        x: { stacked: true, title: { display: true, text: 'км/ч', color: '#7a8aaa' } },
+        x: { stacked: true, title: { display: true, text: window.t('unit_kmh'), color: '#7a8aaa' } },
         y: { stacked: true }
       }
     })
@@ -725,7 +725,7 @@ function renderOperators() {
     data: {
       labels: data.map(d => shortName(d.operator_name, 30)),
       datasets: [{
-        label: 'Медиана скорости',
+        label: window.t('js_speed_median'),
         data: data.map(d => d.speed_median),
         backgroundColor: data.map(d => speedColor(d.speed_median, minO, maxO)),
         borderRadius: 5, borderWidth: 0,
@@ -737,10 +737,10 @@ function renderOperators() {
         legend: { display: false },
         tooltip: { callbacks: {
           title: c => data[c[0].dataIndex].operator_name,
-          label: c => [`Медиана: ${fmt1(c.raw)} км/ч`, `Маршрутов: ${data[c[0].dataIndex].routes}`, `Общ. км: ${fmtKm(data[c[0].dataIndex].total_km)}`]
+          label: c => [`${window.t('js_speed_median')}: ${fmt1(c.raw)} ${window.t('unit_kmh')}`, `${window.t('kpi_routes')}: ${data[c[0].dataIndex].routes}`, `Общ. км: ${fmtKm(data[c[0].dataIndex].total_km)}`]
         }}
       },
-      scales: { x: { title: { display: true, text: 'км/ч', color: '#7a8aaa' } } }
+      scales: { x: { title: { display: true, text: window.t('unit_kmh'), color: '#7a8aaa' } } }
     })
   });
 
@@ -750,15 +750,15 @@ function renderOperators() {
     data: {
       labels: data.map(d => shortName(d.operator_name, 30)),
       datasets: [
-        { label: 'Маршрутов', data: data.map(d => d.routes),  backgroundColor: 'rgba(91,138,240,.6)', borderRadius: 5, borderWidth: 0, yAxisID: 'y' },
-        { label: 'Млн км',    data: data.map(d => +(d.total_km / 1e6).toFixed(3)), backgroundColor: 'rgba(56,201,164,.6)', borderRadius: 5, borderWidth: 0, yAxisID: 'y2' },
+        { label: window.t('kpi_routes'), data: data.map(d => d.routes),  backgroundColor: 'rgba(91,138,240,.6)', borderRadius: 5, borderWidth: 0, yAxisID: 'y' },
+        { label: window.t('js_total_km'),    data: data.map(d => +(d.total_km / 1e6).toFixed(3)), backgroundColor: 'rgba(56,201,164,.6)', borderRadius: 5, borderWidth: 0, yAxisID: 'y2' },
       ]
     },
     options: chartDefaults({
       plugins: { legend: { labels: { color: '#7a8aaa' } } },
       scales: {
-        y:  { position: 'left',  title: { display: true, text: 'Маршрутов', color: '#7a8aaa' } },
-        y2: { position: 'right', title: { display: true, text: 'Млн км',    color: '#7a8aaa' }, grid: { drawOnChartArea: false } }
+        y:  { position: 'left',  title: { display: true, text: window.t('kpi_routes'), color: '#7a8aaa' } },
+        y2: { position: 'right', title: { display: true, text: window.t('js_total_km'),    color: '#7a8aaa' }, grid: { drawOnChartArea: false } }
       }
     })
   });
@@ -781,7 +781,7 @@ function renderTypes() {
       labels: data.map(d => typeName(d.transport_type)),
       datasets: [
         { label: 'Q25',     data: data.map(d => d.speed_p25),                  backgroundColor: data.map(d => typeColor(d.transport_type, 0.25)), borderRadius: 6, borderWidth: 0, stack: 's' },
-        { label: 'Медиана', data: data.map(d => d.speed_median - d.speed_p25), backgroundColor: data.map(d => typeColor(d.transport_type, 0.8)),  borderRadius: 6, borderWidth: 0, stack: 's' },
+        { label: window.t('js_speed_median'), data: data.map(d => d.speed_median - d.speed_p25), backgroundColor: data.map(d => typeColor(d.transport_type, 0.8)),  borderRadius: 6, borderWidth: 0, stack: 's' },
         { label: 'Q75',     data: data.map(d => d.speed_p75 - d.speed_median), backgroundColor: data.map(d => typeColor(d.transport_type, 0.3)),  borderRadius: 6, borderWidth: 0, stack: 's' },
       ]
     },
@@ -790,12 +790,12 @@ function renderTypes() {
         legend: { labels: { color: '#7a8aaa' } },
         tooltip: { callbacks: { label: (c) => {
           const d = data[c.dataIndex];
-          return [`Q25: ${fmt1(d.speed_p25)}`, `Медиана: ${fmt1(d.speed_median)}`, `Q75: ${fmt1(d.speed_p75)}`, `Среднее: ${fmt1(d.speed_mean)}`];
+          return [`Q25: ${fmt1(d.speed_p25)}`, `${window.t('js_speed_median')}: ${fmt1(d.speed_median)}`, `Q75: ${fmt1(d.speed_p75)}`, `${window.t('js_speed_mean')}: ${fmt1(d.speed_mean)}`];
         }}}
       },
       scales: {
         x: { stacked: true },
-        y: { stacked: true, title: { display: true, text: 'км/ч', color: '#7a8aaa' } }
+        y: { stacked: true, title: { display: true, text: window.t('unit_kmh'), color: '#7a8aaa' } }
       }
     })
   });
@@ -806,13 +806,13 @@ function renderTypes() {
         <div class="panel" style="padding:18px">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
             <span class="type-pill type-${typeClass(d.transport_type)}" style="font-size:.8rem">${typeName(d.transport_type)}</span>
-            <span style="font-size:.75rem;color:var(--text-dim)">${d.routes} маршрутов</span>
+            <span style="font-size:.75rem;color:var(--text-dim)">${d.routes} ${window.t('unit_routes')}</span>
           </div>
-          ${statRow('Медиана', fmt1(d.speed_median) + ' км/ч', 'accent')}
-          ${statRow('Среднее', fmt1(d.speed_mean) + ' км/ч')}
-          ${statRow('Q25 / Q75', `${fmt1(d.speed_p25)} / ${fmt1(d.speed_p75)} км/ч`)}
-          ${statRow('Мин / Макс', `${fmt1(d.speed_min)} / ${fmt1(d.speed_max)} км/ч`)}
-          ${statRow('Км в расп.', fmtKm(d.total_km))}
+          ${statRow(window.t('js_speed_median'), fmt1(d.speed_median) + ' ' + window.t('unit_kmh'), 'accent')}
+          ${statRow(window.t('js_speed_mean'), fmt1(d.speed_mean) + ' ' + window.t('unit_kmh'))}
+          ${statRow('Q25 / Q75', `${fmt1(d.speed_p25)} / ${fmt1(d.speed_p75)} ${window.t('unit_kmh')}`)}
+          ${statRow(window.t('js_speed_minmax'), `${fmt1(d.speed_min)} / ${fmt1(d.speed_max)} ${window.t('unit_kmh')}`)}
+          ${statRow(window.t('js_total_km_planned'), fmtKm(d.total_km))}
         </div>
       `).join('')}
     </div>`;
@@ -833,7 +833,7 @@ function renderComparisonRows(data, labelKey, minSpd, maxSpd) {
     const iqrL = (d.speed_p25 / maxVal * 100).toFixed(1);
     const iqrW = ((d.speed_p75 - d.speed_p25) / maxVal * 100).toFixed(1);
     const col  = speedColor(d.speed_median, minSpd, maxSpd);
-    const label = d[labelKey] || '—';
+    const label = d[labelKey] || window.t('unknown_operator');
     return `<div class="comparison-row">
       <div class="cmp-label" title="${label}">${label}</div>
       <div class="cmp-bar-wrap">
@@ -841,7 +841,7 @@ function renderComparisonRows(data, labelKey, minSpd, maxSpd) {
         <div class="cmp-bar-iqr" style="left:${iqrL}%;width:${iqrW}%"></div>
       </div>
       <div class="cmp-value">${fmt1(d.speed_median)}</div>
-      <div class="cmp-sub">${d.routes != null ? d.routes + ' мар.' : ''} ${fmt1(d.speed_p25)}–${fmt1(d.speed_p75)}</div>
+      <div class="cmp-sub">${d.routes != null ? d.routes + ' ' + window.t('unit_routes') : ''} ${fmt1(d.speed_p25)}–${fmt1(d.speed_p75)}</div>
     </div>`;
   }).join('')}</div>`;
 }
@@ -901,13 +901,13 @@ function renderMapLayers() {
   const speeds = shapes.map(s => s.speed_median).filter(v => v > 0).sort((a, b) => a - b);
   const mapMin = speeds[Math.floor(speeds.length * 0.05)] ?? 10;
   const mapMax = speeds[Math.floor(speeds.length * 0.95)] ?? 35;
-  document.querySelectorAll('.map-speed-min').forEach(el => el.textContent = `${fmt1(mapMin)} км/ч`);
-  document.querySelectorAll('.map-speed-max').forEach(el => el.textContent = `${fmt1(mapMax)} км/ч`);
+  document.querySelectorAll('.map-speed-min').forEach(el => el.textContent = `${fmt1(mapMin)} ${window.t('unit_kmh')}`);
+  document.querySelectorAll('.map-speed-max').forEach(el => el.textContent = `${fmt1(mapMax)} ${window.t('unit_kmh')}`);
 
   shapes.forEach(s => {
     const col = speedColor(s.speed_median, mapMin, mapMax);
     L.polyline(s.coords.map(c => [c[1], c[0]]), { color: col, weight: 2.5, opacity: 0.85 })
-      .bindPopup(`<b>Маршрут ${s.short_name}</b><br>Тип: ${typeName(s.transport_type)}<br>Перевозчик: ${s.operator_name || '—'}<br>Медиана скорости: <b>${fmt1(s.speed_median)} км/ч</b>`, { maxWidth: 220 })
+      .bindPopup(`<b>${window.t('js_map_route')} ${s.short_name}</b><br>${window.t('js_map_type')}: ${typeName(s.transport_type)}<br>${window.t('js_map_op')}: ${s.operator_name || window.t('unknown_operator')}<br>${window.t('js_speed_median')}: <b>${fmt1(s.speed_median)} ${window.t('unit_kmh')}</b>`, { maxWidth: 220 })
       .addTo(state.mapLayers);
   });
 }
@@ -919,14 +919,14 @@ async function boot() {
   } catch (e) {
     document.getElementById('loadingOverlay').innerHTML =
       `<div style="color:#e05555;text-align:center;padding:32px">
-        Ошибка загрузки данных.<br><small style="color:#7a8aaa">${e.message}</small><br>
-        <small style="color:#4a5570;margin-top:8px;display:block">Запустите: python -m http.server 8080</small>
+        ${window.t('js_error')}.<br><small style="color:#7a8aaa">${e.message}</small><br>
+        <small style="color:#4a5570;margin-top:8px;display:block">${window.t('js_error_sub')}: python -m http.server 8080</small>
       </div>`;
     return;
   }
 
   document.getElementById('headerMeta').textContent =
-    `${state.routes.length} маршрутов • медиана ${fmt1(state.summary.city_speed_median)} км/ч`;
+    `${state.routes.length} ${window.t('unit_routes')} • ${window.t('js_speed_median').toLowerCase()} ${fmt1(state.summary.city_speed_median)} ${window.t('unit_kmh')}`;
 
   renderOverview();
   initRoutesFilters();
