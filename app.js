@@ -935,6 +935,33 @@ async function boot() {
   updateSpeedLegend();
 
   document.getElementById('loadingOverlay').classList.add('hidden');
+
+  // Language toggle
+  state.lang = localStorage.getItem('lang') || 'ru';
+  const btnLang = document.getElementById('btnLangToggle');
+  if (btnLang) {
+    btnLang.textContent = state.lang === 'ru' ? 'EN' : 'RU';
+    btnLang.addEventListener('click', () => {
+      state.lang = state.lang === 'ru' ? 'en' : 'ru';
+      localStorage.setItem('lang', state.lang);
+      btnLang.textContent = state.lang === 'ru' ? 'EN' : 'RU';
+      if (window.translateDOM) window.translateDOM();
+      
+      // Re-render components safely
+      updateSpeedLegend();
+      renderOverview();
+      if (state.tabInitialized.has('districts')) renderDistricts();
+      if (state.tabInitialized.has('operators')) renderOperators();
+      if (state.tabInitialized.has('types')) renderTypes();
+      if (state.tabInitialized.has('map')) renderMapLayers();
+      if (state.tabInitialized.has('routes')) {
+        renderTable();
+        updateTableInfo();
+      }
+    });
+  }
+  
+  if (window.translateDOM) window.translateDOM();
 }
 
 boot();
