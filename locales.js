@@ -1,4 +1,9 @@
 const LOCALES = {
+  "dist_comp": { ru: "Детальное сравнение районов", en: "Detailed District Comparison" },
+  "op_comp": { ru: "Детальное сравнение перевозчиков", en: "Detailed Operator Comparison" },
+  "js_found": { ru: "Найдено", en: "Found" },
+  "js_selected": { ru: "Выбрано", en: "Selected" },
+
   "tab_groups": { ru: "Группа", en: "Group" },
   "js_min": { ru: "Мин", en: "Min" },
   "js_max": { ru: "Макс", en: "Max" },
